@@ -52,7 +52,7 @@ function fbs_reservation_list($account, $requested_type = NULL) {
       }
     }
 
-    $result[$type][$ding_reservation['id']] = $ding_reservation;
+    $result[$type][$ding_reservation['id']] = new DingReservation($ding_reservation['id'], $ding_reservation);
   }
 
   if ($requested_type) {
@@ -71,18 +71,18 @@ function fbs_reservation_list($account, $requested_type = NULL) {
 /**
  * Implements provider reservation, create.
  */
-function fbs_reservation_create($account, $record_ids, $options) {
+function fbs_reservation_create($account, $local_ids, $options) {
   $batch = new FBS\Model\CreateReservationBatch();
   $batch->reservations = array();
-  foreach ($record_ids as $record_id) {
+  foreach ($local_ids as $local_id) {
     $reservation = new FBS\Model\CreateReservation();
-    if (preg_match('/^fbs-/', $record_id)) {
-      list($record_id, $periodical) = _fbs_periodical_parse_local_id($record_id);
-      $reservation->recordId = $record_id;
+    if (preg_match('/^fbs-/', $local_id)) {
+      list($local_id, $periodical) = _fbs_periodical_parse_local_id($local_id);
+      $reservation->recordId = _fbs_get_record_id($local_id);
       $reservation->preiodical = $periodical;
     }
     else {
-      $reservation->recordId = $record_id;
+      $reservation->recordId = _fbs_get_record_id($local_id);
     }
     $reservation->expiryDate = date('Y-m-d', REQUEST_TIME + ($options['interest_period'] * 24 * 60 * 60));
     $reservation->pickupBranch = $options['preferred_branch'];

@@ -355,3 +355,18 @@ function _fbs_periodical_parse_local_id($local_id) {
   }
   return array($parts[3], $periodical);
 }
+
+/**
+ * Get record_id from faust number.
+ */
+function _fbs_get_record_id($faust) {
+  return ding_provider_build_entity_id($faust);
+}
+
+/**
+ * Get faust number from record_id.
+ */
+function _fbs_get_faust($record_id) {
+  list($dummy, $faust) = explode(':', $record_id, 2);
+  return $faust;
+}

@@ -8,10 +8,15 @@
  * Implements provider availability, items.
  */
 function fbs_availability_items($provider_ids) {
-  $avails = fbs_service()->Catalog->getAvailability(fbs_service()->agencyId, $provider_ids);
+  $record_ids = array();
+  foreach ($provider_ids as $provider_id) {
+    $record_ids[_fbs_get_record_id($provider_id)] = $provider_id;
+  }
+  $avails = fbs_service()->Catalog->getAvailability(fbs_service()->agencyId, array_keys($record_ids));
   $result = array();
   foreach ($avails as $item) {
-    $result[$item->recordId] = array('available' => $item->available, 'reservable' => $item->reservable);
+    $provider_id = $record_ids[$item->recordId];
+    $result[$provider_id] = array('available' => $item->available, 'reservable' => $item->reservable);
   }
   return $result;
 }
@@ -20,11 +25,16 @@ function fbs_availability_items($provider_ids) {
  * Implements provider availability, holdings.
  */
 function fbs_availability_holdings($provider_ids) {
-  $holdings = fbs_service()->Catalog->getHoldings(fbs_service()->agencyId, $provider_ids);
+  $record_ids = array();
+  foreach ($provider_ids as $provider_id) {
+    $record_ids[_fbs_get_record_id($provider_id)] = $provider_id;
+  }
+  $holdings = fbs_service()->Catalog->getHoldings(fbs_service()->agencyId, array_keys($record_ids));
   $result = array();
   $tmp_issues = array();
   foreach ($holdings as $item) {
-    $result[$item->recordId] = array(
+    $provider_id = $record_ids[$item->recordId];
+    $result[$provider_id] = array(
       'reservable' => $item->reservable,
       // Gets properly set in the loop later.
       'available' => FALSE,
@@ -57,11 +67,11 @@ function fbs_availability_holdings($provider_ids) {
       $placement_string = implode(' > ', $result_holding['placement']);
       // Count available materials.
       foreach ($item_holding->materials as $material) {
-        $result[$item->recordId]['total_count']++;
+        $result[$provider_id]['total_count']++;
         $result_holding['total_count']++;
         if ($material->available) {
           $result_holding['available_count']++;
-          $result[$item->recordId]['available'] = TRUE;
+          $result[$provider_id]['available'] = TRUE;
         }
 
         if ($material->periodical) {
@@ -89,13 +99,13 @@ function fbs_availability_holdings($provider_ids) {
         }
       }
 
-      $result[$item->recordId]['holdings'][] = $result_holding;
+      $result[$provider_id]['holdings'][] = $result_holding;
     }
 
     // Add issues in the right nesting.
     if (!empty($tmp_issues)) {
       $issues = array();
-      $result[$item->recordId]['is_periodical'] = TRUE;
+      $result[$provider_id]['is_periodical'] = TRUE;
       foreach ($tmp_issues as $issue) {
         if (!isset($issues[$issue['year']])) {
           $issues[$issue['year']] = array();
@@ -116,7 +126,7 @@ function fbs_availability_holdings($provider_ids) {
           'total_count' => $issue['total'],
         );
       }
-      $result[$item->recordId]['issues'] = $issues;
+      $result[$provider_id]['issues'] = $issues;
     }
 
   }
