@@ -52,7 +52,7 @@ function fbs_reservation_list($account, $requested_type = NULL) {
       }
     }
 
-    $result[$type][$ding_reservation['id']] = new DingReservation($ding_reservation['id'], $ding_reservation);
+    $result[$type][$ding_reservation['id']] = new DingProviderReservation($ding_reservation['id'], $ding_reservation);
   }
 
   if ($requested_type) {
