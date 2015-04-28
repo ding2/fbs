@@ -26,6 +26,8 @@ function fbs_reservation_list($account, $requested_type = NULL) {
       'pickup_branch_id' => $reservation->pickupBranch,
       'created' => $reservation->dateOfReservation,
       'expiry' => $reservation->expiryDate,
+      // Required by ding_reservation.
+      'reservation_type' => $type,
     );
 
     if ($type === DING_RESERVATION_READY) {
